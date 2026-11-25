@@ -4,89 +4,984 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AquaGuard | Smart Filter Monitoring</title>
+
 <style>
-:root{--bg:#081321;--panel:#101f32;--panel2:#142740;--line:#243951;--text:#edf6ff;--muted:#9bb0c8;--cyan:#39c6e8;--green:#35d39a;--yellow:#ffca65;--red:#ff6f78}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 15% 0%,#153454 0,#081321 42%);color:var(--text);font:15px Inter,system-ui,Arial,sans-serif}
-.wrap{max-width:1250px;margin:auto;padding:26px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:22px}
-.brand{display:flex;gap:13px;align-items:center}.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#24b8df,#1678b8);display:grid;place-items:center;font-size:24px}
-h1{font-size:23px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:4px}.right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pill{padding:8px 12px;border:1px solid var(--line);border-radius:30px;color:var(--muted);font-size:12px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:7px}
-button{border:0;border-radius:10px;padding:11px 15px;font-weight:700;cursor:pointer;background:var(--cyan);color:#062033}button.secondary{background:#203a55;color:var(--text);border:1px solid #34516e}button.warn{background:#573c22;color:#ffdc9c}
+:root{
+--bg:#081321;
+--panel:#101f32;
+--panel2:#142740;
+--line:#243951;
+--text:#edf6ff;
+--muted:#9bb0c8;
+--cyan:#39c6e8;
+--green:#35d39a;
+--yellow:#ffca65;
+--red:#ff6f78
+}
+
+*{box-sizing:border-box}
+
+body{
+margin:0;
+background:radial-gradient(circle at 15% 0%,#153454 0,#081321 42%);
+color:var(--text);
+font:15px Inter,system-ui,Arial,sans-serif
+}
+
+.wrap{max-width:1250px;margin:auto;padding:26px}
+
+.top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px;
+flex-wrap:wrap;
+margin-bottom:22px
+}
+
+.brand{display:flex;gap:13px;align-items:center}
+
+.logo{
+width:46px;height:46px;border-radius:14px;
+background:linear-gradient(135deg,#24b8df,#1678b8);
+display:grid;place-items:center;font-size:24px
+}
+
+h1{font-size:23px;margin:0}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
+
+.right{
+display:flex;align-items:center;gap:10px;flex-wrap:wrap
+}
+
+.pill{
+padding:8px 12px;
+border:1px solid var(--line);
+border-radius:30px;
+color:var(--muted);
+font-size:12px
+}
+
+.dot{
+display:inline-block;
+width:8px;height:8px;
+border-radius:50%;
+background:var(--green);
+margin-right:7px
+}
+
+.dot.red{background:var(--red)}
+.dot.yellow{background:var(--yellow)}
+
+button{
+border:0;border-radius:10px;
+padding:11px 15px;
+font-weight:700;cursor:pointer;
+background:var(--cyan);
+color:#062033
+}
+
+button.secondary{
+background:#203a55;
+color:var(--text);
+border:1px solid #34516e
+}
+
+button.warn{background:#573c22;color:#ffdc9c}
+
 button:disabled{opacity:.45;cursor:not-allowed}
-.sectionhead{display:flex;justify-content:space-between;align-items:end;margin:25px 0 12px;gap:12px}.sectionhead h2{font-size:16px;margin:0}.sectionhead span{color:var(--muted);font-size:12px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.card{background:linear-gradient(160deg,#142941,#0e1d30);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0;box-shadow:0 10px 30px #0002}
-.metric-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}.ico{font-size:20px}.value{font-size:29px;font-weight:750;letter-spacing:-1px;margin:13px 0 5px}.unit{font-size:13px;color:var(--muted);font-weight:500;letter-spacing:0}.foot{color:var(--muted);font-size:12px}.bar{height:7px;background:#263d55;border-radius:10px;margin-top:13px;overflow:hidden}.bar i{height:100%;display:block;width:30%;background:var(--cyan);border-radius:10px;transition:width .4s}
-.status{font-size:11px;border-radius:30px;padding:5px 9px;background:#183d36;color:#7af0c4}.status.warn{background:#4a3920;color:#ffdc9c}.status.bad{background:#4b252d;color:#ff9ca3}
-.two{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}.chartbox{height:220px;margin-top:12px}.chartbox canvas{width:100%;height:100%}
-.flowline{display:flex;align-items:center;gap:8px;margin-top:18px;flex-wrap:wrap}.step{background:#18314a;border:1px solid #2b4b68;border-radius:12px;padding:12px;text-align:center;flex:1;min-width:100px}.step b{display:block;font-size:13px}.step small{color:var(--muted);font-size:11px}.arrow{color:var(--cyan);font-size:20px}
-.controlrow{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.motor{display:flex;align-items:center;gap:12px}.motoricon{font-size:27px}.motorstate{font-weight:750}.history{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}.history th,.history td{text-align:left;padding:11px 8px;border-bottom:1px solid var(--line)}.history th{color:var(--muted);font-weight:600}
-.alert{padding:12px 14px;border-radius:12px;background:#17372f;border:1px solid #24634f;color:#9af0cd;font-size:13px;margin-top:14px}.alert.warn{background:#45351f;border-color:#735526;color:#ffdc9c}.note{color:var(--muted);font-size:11px;line-height:1.5;margin-top:20px}
-@media(max-width:850px){.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
-@media(max-width:520px){.wrap{padding:16px}.grid{grid-template-columns:1fr 1fr;gap:9px}.card{padding:13px}.value{font-size:24px}h1{font-size:19px}.flowline{gap:5px}.step{min-width:80px;padding:9px 5px}.arrow{font-size:15px}}
+
+.sectionhead{
+display:flex;
+justify-content:space-between;
+align-items:end;
+margin:25px 0 12px;
+gap:12px
+}
+
+.sectionhead h2{font-size:16px;margin:0}
+.sectionhead span{color:var(--muted);font-size:12px}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:14px
+}
+
+.card{
+background:linear-gradient(160deg,#142941,#0e1d30);
+border:1px solid var(--line);
+border-radius:16px;
+padding:17px;
+min-width:0;
+box-shadow:0 10px 30px #0002
+}
+
+.metric-top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+color:var(--muted);
+font-size:13px
+}
+
+.ico{font-size:20px}
+
+.value{
+font-size:29px;
+font-weight:750;
+letter-spacing:-1px;
+margin:13px 0 5px
+}
+
+.unit{
+font-size:13px;
+color:var(--muted);
+font-weight:500;
+letter-spacing:0
+}
+
+.foot{color:var(--muted);font-size:12px}
+
+.bar{
+height:7px;
+background:#263d55;
+border-radius:10px;
+margin-top:13px;
+overflow:hidden
+}
+
+.bar i{
+height:100%;
+display:block;
+width:30%;
+background:var(--cyan);
+border-radius:10px;
+transition:width .4s
+}
+
+.status{
+font-size:11px;
+border-radius:30px;
+padding:5px 9px;
+background:#183d36;
+color:#7af0c4
+}
+
+.status.warn{background:#4a3920;color:#ffdc9c}
+.status.bad{background:#4b252d;color:#ff9ca3}
+
+.two{
+display:grid;
+grid-template-columns:1.35fr 1fr;
+gap:14px
+}
+
+.chartbox{height:220px;margin-top:12px}
+.chartbox canvas{width:100%;height:100%}
+
+.flowline{
+display:flex;
+align-items:center;
+gap:8px;
+margin-top:18px;
+flex-wrap:wrap
+}
+
+.step{
+background:#18314a;
+border:1px solid #2b4b68;
+border-radius:12px;
+padding:12px;
+text-align:center;
+flex:1;
+min-width:100px
+}
+
+.step b{display:block;font-size:13px}
+.step small{color:var(--muted);font-size:11px}
+.arrow{color:var(--cyan);font-size:20px}
+
+.controlrow{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:15px;
+flex-wrap:wrap
+}
+
+.motor{display:flex;align-items:center;gap:12px}
+.motoricon{font-size:27px}
+.motorstate{font-weight:750}
+
+.history{
+width:100%;
+border-collapse:collapse;
+margin-top:12px;
+font-size:13px
+}
+
+.history th,.history td{
+text-align:left;
+padding:11px 8px;
+border-bottom:1px solid var(--line)
+}
+
+.history th{color:var(--muted);font-weight:600}
+
+.alert{
+padding:12px 14px;
+border-radius:12px;
+background:#17372f;
+border:1px solid #24634f;
+color:#9af0cd;
+font-size:13px;
+margin-top:14px
+}
+
+.alert.warn{
+background:#45351f;
+border-color:#735526;
+color:#ffdc9c
+}
+
+.note{
+color:var(--muted);
+font-size:11px;
+line-height:1.5;
+margin-top:20px
+}
+
+@media(max-width:850px){
+.grid{grid-template-columns:repeat(2,1fr)}
+.two{grid-template-columns:1fr}
+}
+
+@media(max-width:520px){
+.wrap{padding:16px}
+.grid{grid-template-columns:1fr 1fr;gap:9px}
+.card{padding:13px}
+.value{font-size:24px}
+h1{font-size:19px}
+.flowline{gap:5px}
+.step{min-width:80px;padding:9px 5px}
+.arrow{font-size:15px}
+}
 </style>
 </head>
+
 <body>
 <div class="wrap">
-  <header class="top">
-    <div class="brand"><div class="logo">💧</div><div><h1>AquaGuard</h1><div class="sub">Smart Groundwater Recharge Filter · IoT Monitoring</div></div></div>
-    <div class="right"><span class="pill"><span class="dot"></span><span id="connection">Simulation running</span></span><span class="pill" id="clock">--:--:--</span><button class="secondary" id="pauseBtn">Pause updates</button></div>
-  </header>
 
-  <div class="sectionhead"><h2>Live sensor readings</h2><span>Demo values · refreshes every 2 seconds</span></div>
-  <div class="grid">
-    <div class="card"><div class="metric-top"><span>Ultrasonic 1 · Before mesh</span><span class="ico">📡</span></div><div class="value"><span id="u1">18.4</span> <span class="unit">cm</span></div><div class="foot">Distance from sensor to water / surface</div><div class="bar"><i id="u1bar"></i></div></div>
-    <div class="card"><div class="metric-top"><span>Ultrasonic 2 · After mesh</span><span class="ico">📡</span></div><div class="value"><span id="u2">24.1</span> <span class="unit">cm</span></div><div class="foot">Downstream chamber distance</div><div class="bar"><i id="u2bar"></i></div></div>
-    <div class="card"><div class="metric-top"><span>Water flow rate</span><span class="ico">🌊</span></div><div class="value"><span id="flow">3.8</span> <span class="unit">L/min</span></div><div class="foot">Estimated incoming flow</div><div class="bar"><i id="flowbar"></i></div></div>
-    <div class="card"><div class="metric-top"><span>Water level</span><span class="ico">🫧</span></div><div class="value"><span id="level">64</span> <span class="unit">%</span></div><div class="foot">Chamber level estimate</div><div class="bar"><i id="levelbar"></i></div></div>
-    <div class="card"><div class="metric-top"><span>Turbidity</span><span class="ico">🧪</span></div><div class="value"><span id="ntu">42</span> <span class="unit">NTU*</span></div><div class="foot">Water clarity sensor reading</div><div class="bar"><i id="ntubar"></i></div></div>
-    <div class="card"><div class="metric-top"><span>Estimated mesh clogging</span><span class="ico">🧹</span></div><div class="value"><span id="clog">28</span> <span class="unit">%</span></div><div class="foot" id="clogText">Mesh condition: Normal</div><div class="bar"><i id="clogbar"></i></div></div>
-  </div>
+<header class="top">
 
-  <div class="sectionhead"><h2>Filter operation</h2><span>Process overview and motor control</span></div>
-  <div class="card">
-    <div class="flowline">
-      <div class="step"><b>🌧️ Rainwater</b><small>Inlet</small></div><span class="arrow">→</span>
-      <div class="step"><b>🕸️ SS mesh</b><small id="meshStep">Normal</small></div><span class="arrow">→</span>
-      <div class="step"><b>💧 Recharge</b><small>Outlet chamber</small></div>
-    </div>
-    <div class="alert" id="mainAlert">System operating normally. No cleaning required.</div>
-  </div>
-
-  <div class="two" style="margin-top:14px">
-    <div class="card"><div class="metric-top"><span>Sensor trend</span><span class="status">DEMO</span></div><div class="chartbox"><canvas id="chart" width="700" height="250"></canvas></div><div class="foot">Recent estimated mesh clogging (%)</div></div>
-    <div class="card"><div class="metric-top"><span>Anti-clogging controller</span><span class="ico">⚙️</span></div>
-      <div class="controlrow" style="margin-top:20px"><div class="motor"><span class="motoricon">🧹</span><div><div class="motorstate" id="motorState">MOTOR OFF</div><div class="foot" id="motorReason">Mesh is below cleaning threshold</div></div></div><span class="status" id="motorBadge">STANDBY</span></div>
-      <div style="display:flex;gap:9px;margin-top:20px;flex-wrap:wrap"><button id="cleanBtn">Run demo cleaning</button><button class="secondary" id="autoBtn">Auto mode: ON</button></div>
-      <div class="foot" style="margin-top:13px">Demo threshold: cleaning starts at 70% estimated clogging. Hardware motor control will be added later.</div>
-    </div>
-  </div>
-
-  <div class="sectionhead"><h2>Cleaning activity</h2><span id="lastClean">Last cleaning: Not yet</span></div>
-  <div class="card"><table class="history"><thead><tr><th>Time</th><th>Event</th><th>Result</th></tr></thead><tbody id="history"><tr><td>—</td><td>Dashboard started</td><td>Simulation ready</td></tr></tbody></table></div>
-  <p class="note">*All readings on this first version are simulated demo data, not measurements from physical sensors. Ultrasonic distance is not automatically a water-level percentage until the tank height and sensor mounting are calibrated. Turbidity sensors often need calibration and may report voltage or a converted estimate rather than accurate NTU. Mesh clogging is a demo estimate; in the hardware version it must be calculated from calibrated upstream/downstream level or pressure/flow behaviour. Do not connect a motor directly to an Arduino pin; use a suitable motor driver and power supply.</p>
+<div class="brand">
+<div class="logo">💧</div>
+<div>
+<h1>AquaGuard</h1>
+<div class="sub">
+Smart Groundwater Recharge Filter · IoT Monitoring
 </div>
+</div>
+</div>
+
+<div class="right">
+
+<span class="pill">
+<span class="dot" id="connectionDot"></span>
+<span id="connection">Simulation mode</span>
+</span>
+
+<span class="pill" id="clock">--:--:--</span>
+
+<button class="secondary" id="connectBtn"
+onclick="connectArduino()">
+🔌 Connect Arduino UNO
+</button>
+
+<button class="warn" id="disconnectBtn"
+onclick="disconnectArduino()" disabled>
+Disconnect
+</button>
+
+<button class="secondary" id="pauseBtn">
+Pause demo
+</button>
+
+</div>
+</header>
+
+<div class="sectionhead">
+<h2>Live sensor readings</h2>
+<span id="readingMode">Demo values · refreshes every 2 seconds</span>
+</div>
+
+<div class="grid">
+
+<div class="card">
+<div class="metric-top">
+<span>Ultrasonic 1 · Before mesh</span>
+<span class="ico">📡</span>
+</div>
+<div class="value">
+<span id="u1">18.4</span>
+<span class="unit">cm</span>
+</div>
+<div class="foot">Distance from sensor to water / surface</div>
+<div class="bar"><i id="u1bar"></i></div>
+</div>
+
+<div class="card">
+<div class="metric-top">
+<span>Ultrasonic 2 · After mesh</span>
+<span class="ico">📡</span>
+</div>
+<div class="value">
+<span id="u2">24.1</span>
+<span class="unit">cm</span>
+</div>
+<div class="foot">Downstream chamber distance</div>
+<div class="bar"><i id="u2bar"></i></div>
+</div>
+
+<div class="card">
+<div class="metric-top">
+<span>Water flow rate</span>
+<span class="ico">🌊</span>
+</div>
+<div class="value">
+<span id="flow">3.8</span>
+<span class="unit">L/min</span>
+</div>
+<div class="foot">YF-S201 water flow sensor</div>
+<div class="bar"><i id="flowbar"></i></div>
+</div>
+
+<div class="card">
+<div class="metric-top">
+<span>Water level</span>
+<span class="ico">🫧</span>
+</div>
+<div class="value">
+<span id="level">64</span>
+<span class="unit">%</span>
+</div>
+<div class="foot">Chamber level estimate</div>
+<div class="bar"><i id="levelbar"></i></div>
+</div>
+
+<div class="card">
+<div class="metric-top">
+<span>Turbidity</span>
+<span class="ico">🧪</span>
+</div>
+<div class="value">
+<span id="ntu">42</span>
+<span class="unit">NTU*</span>
+</div>
+<div class="foot">Water clarity sensor reading</div>
+<div class="bar"><i id="ntubar"></i></div>
+</div>
+
+<div class="card">
+<div class="metric-top">
+<span>Estimated mesh clogging</span>
+<span class="ico">🧹</span>
+</div>
+<div class="value">
+<span id="clog">28</span>
+<span class="unit">%</span>
+</div>
+<div class="foot" id="clogText">Mesh condition: Normal</div>
+<div class="bar"><i id="clogbar"></i></div>
+</div>
+
+</div>
+
+<div class="sectionhead">
+<h2>Filter operation</h2>
+<span>Process overview and motor control</span>
+</div>
+
+<div class="card">
+
+<div class="flowline">
+
+<div class="step">
+<b>🌧️ Rainwater</b>
+<small>Inlet</small>
+</div>
+
+<span class="arrow">→</span>
+
+<div class="step">
+<b>🕸️ SS mesh</b>
+<small id="meshStep">Normal</small>
+</div>
+
+<span class="arrow">→</span>
+
+<div class="step">
+<b>💧 Recharge</b>
+<small>Outlet chamber</small>
+</div>
+
+</div>
+
+<div class="alert" id="mainAlert">
+System operating normally. No cleaning required.
+</div>
+
+</div>
+
+<div class="two" style="margin-top:14px">
+
+<div class="card">
+
+<div class="metric-top">
+<span>Sensor trend</span>
+<span class="status" id="chartStatus">DEMO</span>
+</div>
+
+<div class="chartbox">
+<canvas id="chart" width="700" height="250"></canvas>
+</div>
+
+<div class="foot">Recent estimated mesh clogging (%)</div>
+
+</div>
+
+<div class="card">
+
+<div class="metric-top">
+<span>Anti-clogging controller</span>
+<span class="ico">⚙️</span>
+</div>
+
+<div class="controlrow" style="margin-top:20px">
+
+<div class="motor">
+<span class="motoricon">🧹</span>
+<div>
+<div class="motorstate" id="motorState">MOTOR OFF</div>
+<div class="foot" id="motorReason">
+Mesh is below cleaning threshold
+</div>
+</div>
+</div>
+
+<span class="status" id="motorBadge">STANDBY</span>
+
+</div>
+
+<div style="display:flex;gap:9px;margin-top:20px;flex-wrap:wrap">
+
+<button id="cleanBtn">Run demo cleaning</button>
+
+<button class="secondary" id="autoBtn">
+Auto mode: ON
+</button>
+
+</div>
+
+<div class="foot" style="margin-top:13px" id="motorNote">
+Demo threshold: cleaning starts at 70% estimated clogging.
+Hardware motor control is not enabled.
+</div>
+
+</div>
+</div>
+
+<div class="sectionhead">
+<h2>Cleaning activity</h2>
+<span id="lastClean">Last cleaning: Not yet</span>
+</div>
+
+<div class="card">
+
+<table class="history">
+
+<thead>
+<tr>
+<th>Time</th>
+<th>Event</th>
+<th>Result</th>
+</tr>
+</thead>
+
+<tbody id="history">
+<tr>
+<td>—</td>
+<td>Dashboard started</td>
+<td>Demo mode ready</td>
+</tr>
+</tbody>
+
+</table>
+</div>
+
+<p class="note">
+Hardware mode receives actual readings through the USB Web Serial API.
+Water level and mesh clogging require suitable calibration or calculations.
+Turbidity readings need calibration before being treated as accurate NTU.
+The dashboard does not directly control the pump or servo.
+Do not connect motors directly to Arduino pins.
+</p>
+
+</div>
+
 <script>
-const $=id=>document.getElementById(id);
-let paused=false,auto=true,cleaning=false,clog=28,history=[],trend=Array(24).fill(28);
-let vals={u1:18.4,u2:24.1,flow:3.8,level:64,ntu:42};
-function setBar(id,v,max=100){$(id).style.width=Math.max(2,Math.min(100,v/max*100))+'%'}
-function addHistory(event,result){let t=new Date().toLocaleTimeString();history.unshift([t,event,result]);history=history.slice(0,6);$('history').innerHTML=history.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}
-function draw(){let c=$('chart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#29425c';ctx.lineWidth=1;for(let i=0;i<5;i++){let y=15+i*(h-35)/4;ctx.beginPath();ctx.moveTo(35,y);ctx.lineTo(w-10,y);ctx.stroke()}ctx.fillStyle='#9bb0c8';ctx.font='13px Arial';[100,75,50,25,0].forEach((v,i)=>ctx.fillText(v,5,20+i*(h-35)/4));let pts=trend.map((v,i)=>({x:40+i*(w-55)/(trend.length-1),y:h-20-v/100*(h-40)}));ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#39c6e8';ctx.lineWidth=3;ctx.stroke();ctx.lineTo(pts.at(-1).x,h-20);ctx.lineTo(pts[0].x,h-20);ctx.closePath();ctx.fillStyle='rgba(57,198,232,.12)';ctx.fill()}
-function updateUI(){
- $('u1').textContent=vals.u1.toFixed(1);$('u2').textContent=vals.u2.toFixed(1);$('flow').textContent=vals.flow.toFixed(1);$('level').textContent=Math.round(vals.level);$('ntu').textContent=Math.round(vals.ntu);$('clog').textContent=Math.round(clog);
- setBar('u1bar',vals.u1,50);setBar('u2bar',vals.u2,50);setBar('flowbar',vals.flow,10);setBar('levelbar',vals.level);setBar('ntubar',vals.ntu,150);setBar('clogbar',clog);
- let condition=clog>=70?'Highly clogged':clog>=40?'Partially clogged':'Normal';
- $('clogText').textContent='Mesh condition: '+condition;$('meshStep').textContent=condition;
- let alert=$('mainAlert');alert.className='alert'+(clog>=70?' warn':'');alert.textContent=clog>=70?'Clogging threshold reached. Cleaning is required.':clog>=40?'Partial clogging detected. Keep monitoring the mesh.':'System operating normally. No cleaning required.';
- if(auto&&clog>=70&&!cleaning)startCleaning(true);
+
+// =====================================
+// AQUAGUARD DASHBOARD
+// WEB SERIAL API INTEGRATION
+// =====================================
+
+const $ = id => document.getElementById(id);
+
+let paused = false;
+let auto = true;
+let cleaning = false;
+
+let hardwareConnected = false;
+let serialPort = null;
+let serialReader = null;
+let keepReading = false;
+
+let clog = 28;
+let hardwareClogAvailable = false;
+
+let history = [];
+let trend = Array(24).fill(28);
+
+let vals = {
+    u1:18.4,
+    u2:24.1,
+    flow:3.8,
+    level:64,
+    ntu:42
+};
+
+// =====================================
+// DASHBOARD UI
+// =====================================
+
+function setBar(id,v,max=100){
+
+    const value = Number(v);
+
+    $(id).style.width =
+        Math.max(2,Math.min(100,value/max*100)) + '%';
 }
-function tick(){if(paused)return;vals.u1=Math.max(5,Math.min(45,vals.u1+(Math.random()-.5)*2.8));vals.u2=Math.max(5,Math.min(45,vals.u2+(Math.random()-.5)*2.4));vals.flow=Math.max(.2,Math.min(9,vals.flow+(Math.random()-.5)*.7-(clog>60?.35:0)));vals.level=Math.max(10,Math.min(95,vals.level+(Math.random()-.5)*4));vals.ntu=Math.max(5,Math.min(140,vals.ntu+(Math.random()-.5)*8));if(!cleaning)clog=Math.max(0,Math.min(100,clog+(Math.random()*.9)));trend.push(clog);trend.shift();updateUI();draw()}
-function startCleaning(automatic=false){if(cleaning)return;cleaning=true;$('motorState').textContent='MOTOR ON · CLEANING';$('motorReason').textContent=automatic?'Automatic threshold triggered':'Manual demo cleaning started';$('motorBadge').textContent='ACTIVE';$('motorBadge').className='status warn';$('cleanBtn').disabled=true;addHistory(automatic?'Automatic cleaning':'Manual demo cleaning','Wiper activated');setTimeout(()=>{clog=Math.max(8,clog-48);cleaning=false;$('motorState').textContent='MOTOR OFF';$('motorReason').textContent='Cleaning cycle completed';$('motorBadge').textContent='STANDBY';$('motorBadge').className='status';$('cleanBtn').disabled=false;$('lastClean').textContent='Last cleaning: '+new Date().toLocaleTimeString();addHistory('Cleaning completed','Estimated mesh blockage reduced');updateUI();draw()},3200)}
-$('pauseBtn').onclick=()=>{paused=!paused;$('pauseBtn').textContent=paused?'Resume updates':'Pause updates';$('connection').textContent=paused?'Simulation paused':'Simulation running'};
-$('cleanBtn').onclick=()=>startCleaning(false);
-$('autoBtn').onclick=()=>{auto=!auto;$('autoBtn').textContent='Auto mode: '+(auto?'ON':'OFF');$('autoBtn').className=auto?'secondary':'warn'};
-function clock(){ $('clock').textContent=new Date().toLocaleTimeString() }
-clock();setInterval(clock,1000);updateUI();draw();setInterval(tick,2000);
-</script>
-</body>
-</html>
+
+function addHistory(event,result){
+
+    let t = new Date().toLocaleTimeString();
+
+    history.unshift([t,event,result]);
+
+    history = history.slice(0,6);
+
+    $('history').innerHTML = history.map(r =>
+        `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`
+    ).join('');
+}
+
+function draw(){
+
+    let c = $('chart');
+    let ctx = c.getContext('2d');
+
+    let w = c.width;
+    let h = c.height;
+
+    ctx.clearRect(0,0,w,h);
+
+    ctx.strokeStyle = '#29425c';
+    ctx.lineWidth = 1;
+
+    for(let i=0;i<5;i++){
+
+        let y = 15+i*(h-35)/4;
+
+        ctx.beginPath();
+        ctx.moveTo(35,y);
+        ctx.lineTo(w-10,y);
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = '#9bb0c8';
+    ctx.font = '13px Arial';
+
+    [100,75,50,25,0].forEach((v,i)=>{
+
+        ctx.fillText(v,5,20+i*(h-35)/4);
+
+    });
+
+    let pts = trend.map((v,i)=>({
+
+        x:40+i*(w-55)/(trend.length-1),
+
+        y:h-20-v/100*(h-40)
+
+    }));
+
+    ctx.beginPath();
+
+    pts.forEach((p,i)=>{
+
+        i ? ctx.lineTo(p.x,p.y) : ctx.moveTo(p.x,p.y);
+
+    });
+
+    ctx.strokeStyle = '#39c6e8';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    ctx.lineTo(pts.at(-1).x,h-20);
+    ctx.lineTo(pts[0].x,h-20);
+    ctx.closePath();
+
+    ctx.fillStyle = 'rgba(57,198,232,.12)';
+    ctx.fill();
+}
+
+function updateUI(){
+
+    $('u1').textContent = Number(vals.u1).toFixed(1);
+    $('u2').textContent = Number(vals.u2).toFixed(1);
+    $('flow').textContent = Number(vals.flow).toFixed(2);
+    $('level').textContent = Number(vals.level).toFixed(1);
+    $('ntu').textContent = Number(vals.ntu).toFixed(1);
+
+    setBar('u1bar',vals.u1,50);
+    setBar('u2bar',vals.u2,50);
+    setBar('flowbar',vals.flow,10);
+    setBar('levelbar',vals.level);
+    setBar('ntubar',vals.ntu,150);
+
+    if(hardwareConnected && !hardwareClogAvailable){
+
+        $('clog').textContent = '--';
+        $('clogText').textContent = 'Not provided by Arduino';
+        $('clogbar').style.width = '0%';
+        $('meshStep').textContent = 'Awaiting data';
+        $('mainAlert').className = 'alert';
+        $('mainAlert').textContent =
+            'Live sensor readings received. Mesh clogging data is not available.';
+        return;
+    }
+
+    $('clog').textContent = Math.round(clog);
+    setBar('clogbar',clog);
+
+    let condition =
+        clog>=70 ? 'Highly clogged' :
+        clog>=40 ? 'Partially clogged' :
+        'Normal';
+
+    $('clogText').textContent = 'Mesh condition: '+condition;
+    $('meshStep').textContent = condition;
+
+    let alert = $('mainAlert');
+
+    alert.className = 'alert'+(clog>=70?' warn':'');
+
+    alert.textContent =
+        clog>=70 ? 'Clogging threshold reached. Cleaning is required.' :
+        clog>=40 ? 'Partial clogging detected. Keep monitoring the mesh.' :
+        'System operating normally. No cleaning required.';
+
+    // Automatic demo cleaning only.
+    // Never activate simulated cleaning in hardware mode.
+
+    if(!hardwareConnected && auto && clog>=70 && !cleaning){
+        startCleaning(true);
+    }
+}
+
+// =====================================
+// DEMO SIMULATION
+// =====================================
+
+function tick(){
+
+    if(paused || hardwareConnected) return;
+
+    vals.u1 = Math.max(5,Math.min(45,
+        vals.u1+(Math.random()-.5)*2.8));
+
+    vals.u2 = Math.max(5,Math.min(45,
+        vals.u2+(Math.random()-.5)*2.4));
+
+    vals.flow = Math.max(.2,Math.min(9,
+        vals.flow+(Math.random()-.5)*.7-(clog>60?.35:0)));
+
+    vals.level = Math.max(10,Math.min(95,
+        vals.level+(Math.random()-.5)*4));
+
+    vals.ntu = Math.max(5,Math.min(140,
+        vals.ntu+(Math.random()-.5)*8));
+
+    if(!cleaning){
+        clog = Math.max(0,Math.min(100,clog+(Math.random()*.9)));
+    }
+
+    trend.push(clog);
+    trend.shift();
+
+    updateUI();
+    draw();
+}
+
+// =====================================
+// DEMO CLEANING
+// =====================================
+
+function startCleaning(automatic=false){
+
+    if(cleaning || hardwareConnected) return;
+
+    cleaning = true;
+
+    $('motorState').textContent = 'MOTOR ON · DEMO';
+    $('motorReason').textContent =
+        automatic ? 'Automatic demo threshold triggered' :
+        'Manual demo cleaning started';
+
+    $('motorBadge').textContent = 'DEMO ACTIVE';
+    $('motorBadge').className = 'status warn';
+
+    $('cleanBtn').disabled = true;
+
+    addHistory(
+        automatic ? 'Automatic demo cleaning' : 'Manual demo cleaning',
+        'Simulated wiper activation'
+    );
+
+    setTimeout(()=>{
+
+        clog = Math.max(8,clog-48);
+
+        cleaning = false;
+
+        $('motorState').textContent = 'MOTOR OFF';
+        $('motorReason').textContent = 'Demo cleaning completed';
+
+        $('motorBadge').textContent = 'STANDBY';
+        $('motorBadge').className = 'status';
+
+        $('cleanBtn').disabled = false;
+
+        $('lastClean').textContent =
+            'Last cleaning: '+new Date().toLocaleTimeString();
+
+        addHistory('Demo cleaning completed','Simulation updated');
+
+        updateUI();
+        draw();
+
+    },3200);
+}
+
+// =====================================
+// SERIAL DATA PARSER
+// =====================================
+
+// Accepts JSON data and labeled serial output.
+
+function processSerialLine(line){
+
+    line = line.trim();
+
+    if(!line) return;
+
+    console.log('Arduino Serial:',line);
+
+    let d = {};
+
+    // Preferred format: JSON
+
+    try{
+
+        d = JSON.parse(line);
+
+    }catch(error){
+
+        // Also support labeled text:
+        // U1: 18.4, U2: 24.1, Flow: 3.8
+
+        const aliases = {
+
+            u1:['u1','ultrasonic1','distance1'],
+            u2:['u2','ultrasonic2','distance2'],
+            flow:['flow','flowrate','flow_rate'],
+            level:['level','waterlevel','water_level'],
+            ntu:['ntu','turbidity'],
+            clog:['clog','clogging','meshclogging']
+
+        };
+
+        let normalized = line.toLowerCase();
+
+        for(const [key,names] of Object.entries(aliases)){
+
+            for(const name of names){
+
+                const regex = new RegExp(
+                    '(?:^|[,;|\\s])'+name+
+                    '\\s*[:=]\\s*(-?\\d+(?:\\.\\d+)?)',
+                    'i'
+                );
+
+                const match = normalized.match(regex);
+
+                if(match){
+
+                    d[key] = Number(match[1]);
+                    break;
+                }
+            }
+        }
+    }
+
+    applySensorData(d);
+}
+
+// =====================================
+// UPDATE DASHBOARD FROM ARDUINO
+// =====================================
+
+function applySensorData(d){
+
+    let changed = false;
+
+    function getValue(keys){
+
+        for(const key of keys){
+
+            if(d[key] !== undefined &&
+               d[key] !== null &&
+               d[key] !== ''){
+
+                let n = Number(d[key]);
+
+                if(Number.isFinite(n)) return n;
+            }
+        }
+
+        return null;
+    }
+
+    const u1 = getValue(['u1','ultrasonic1','distance1']);
+    const u2 = getValue(['u2','ultrasonic2','distance2']);
+    const flow = getValue(['flow','flowRate','flow_rate']);
+    const level = getValue(['level','waterLevel','water_level']);
+    const ntu = getValue(['ntu','turbidity']);
+    const newClog = getValue(['clog','clogging','meshClogging']);
+
+    if(u1 !== null){ vals.u1 = u1; changed = true; }
+    if(u2 !== null){ vals.u2 = u2; changed = true; }
+    if(flow !== null){ vals.flow = flow; changed = true; }
+    if(level !== null){ vals.level = level; changed = true; }
+    if(ntu !== null){ vals.ntu = ntu; changed = true; }
+
+    if(newClog !== null){
+
+        clog = Math.max(0,Math.min(100,newClog));
+        hardwareClogAvailable = true;
+        changed = true;
+    }
+
+    if(!changed){
+
+        console.warn('No recognized sensor fields:',d);
+        return;
+    }
+
+    // Update hardware dashboard
+
+    updateUI();
+
+    // Update chart only when actual clog data is supplied
+
+    if(newClog !== null){
+
+        trend.push(clog);
+        trend.shift();
+        draw();
+    }
+
+    $('readingMode').textContent =
+        'Live Arduino hardware readings';
+
+    $('chartStatus').textContent =
+        newClog !== null ? 'HARDWARE' : 'PARTIAL DATA';
+
+    $('chartStatus').className =
+        'status'+(newClog !== null?'':' warn');
+}
+
+// =====================================
+// WEB SERIAL API CONNECTION
+// =====================================
+
+async function connectArduino(){
+
+    if(!('serial' in navigator)){
+
+        alert(
+            'Web Serial API is not supported in this browser. '+
+            'Please use Google Chrome or Microsoft Edge on Windows.'
+        );
+
+        return;
+    }
+
+    try{
+
+        // Ask user to select Arduino COM port
+
+        serialPort = await navigator.serial.requestPort();
+
+        // Open serial connection
+
+        await serialPort.open({
+            baudRate:9600
+        });
+
+        hardwareConnected = true;
+        paused = false;
+
+        hardwareClogAvailable = false;
+
+        $('connection').textContent = 'Arduino Connected';
+        $('connectionDot').className = 'dot';
+
+        $('readingMode').textContent =
+            'Waiting for actual Arduino sensor data...';
+
+        $('connectBtn').disabled = true;
+        $('disconnectBtn').disabled = false;
+
+        $('pauseBtn').disabled = true;
+        $('pauseBtn').textContent = 'Hardware mode active';
+
+        $('cleanBtn').disabled = true;
+        $('autoBtn').disabled = true;
+
+        $('motorNote').textContent =
+            'Demo motor controls disabled during hardware connection.';
+
+        $('motorReason').textContent =
+            'Hardware control is not connected';
+
+        $('chartStatus').textContent = 'HARDWARE';
+
+        addHistory(
+            'Arduino connected',
+            'USB serial communication started'
+        );
+
+        keepReading = true;
