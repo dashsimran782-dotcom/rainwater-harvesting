@@ -78,4 +78,30 @@ const LIM={u1:[5,25],u2:[5,25],flow:[3,5],ntu:[0,10],level:[0,100],clog:[0,100]}
 let manual=false;
 const THRESH=75; // cleaning / "highly clogged" triggers when clogging is above this %
 function cl(k,v){return Math.max(LIM[k][0],Math.min(LIM[k][1],v))}
-const FIELDS=[['u1','Ultrasonic 1
+const FIELDS=[['u1','Ultrasonic 1 (cm)',.1],['u2','Ultrasonic 2 (cm)',.1],['flow','Flow rate (L/min)',.1],['level','Water level (%)',1],['ntu','Turbidity (NTU)',.1],['clog','Mesh clogging (%)',1]];
+function buildManual(){$('manualBox').innerHTML=FIELDS.map(([k,l,st])=>`<label class="mrow"><span>${l}</span><input type="range" id="s_${k}" min="${LIM[k][0]}" max="${LIM[k][1]}" step="${st}"><b id="o_${k}"></b></label>`).join('');FIELDS.forEach(([k])=>{$('s_'+k).oninput=e=>{setManual(true);let v=parseFloat(e.target.value);if(k==='clog')clog=v;else vals[k]=v;updateUI();draw()}})}
+function syncSliders(){FIELDS.forEach(([k,,st])=>{let v=k==='clog'?clog:vals[k],s=$('s_'+k);if(!s)return;if(document.activeElement!==s)s.value=v;$('o_'+k).textContent=(st<1?(+v).toFixed(1):Math.round(v))})}
+function setManual(m){manual=m;$('manualBtn').textContent='Manual mode: '+(m?'ON':'OFF');$('manualBtn').className=m?'warn':'secondary'}
+function setBar(id,v,max=100){$(id).style.width=Math.max(2,Math.min(100,v/max*100))+'%'}
+function addHistory(event,result){let t=new Date().toLocaleTimeString();history.unshift([t,event,result]);history=history.slice(0,6);$('history').innerHTML=history.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')}
+function draw(){let c=$('chart'),ctx=c.getContext('2d'),w=c.width,h=c.height;ctx.clearRect(0,0,w,h);ctx.strokeStyle='#29425c';ctx.lineWidth=1;for(let i=0;i<5;i++){let y=15+i*(h-35)/4;ctx.beginPath();ctx.moveTo(35,y);ctx.lineTo(w-10,y);ctx.stroke()}ctx.fillStyle='#9bb0c8';ctx.font='13px Arial';[100,75,50,25,0].forEach((v,i)=>ctx.fillText(v,5,20+i*(h-35)/4));let pts=trend.map((v,i)=>({x:40+i*(w-55)/(trend.length-1),y:h-20-v/100*(h-40)}));ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#39c6e8';ctx.lineWidth=3;ctx.stroke();ctx.lineTo(pts.at(-1).x,h-20);ctx.lineTo(pts[0].x,h-20);ctx.closePath();ctx.fillStyle='rgba(57,198,232,.12)';ctx.fill()}
+function updateUI(){
+ $('u1').textContent=vals.u1.toFixed(1);$('u2').textContent=vals.u2.toFixed(1);$('flow').textContent=vals.flow.toFixed(1);$('level').textContent=Math.round(vals.level);$('ntu').textContent=vals.ntu.toFixed(1);$('clog').textContent=Math.round(clog);
+ setBar('u1bar',vals.u1,25);setBar('u2bar',vals.u2,25);setBar('flowbar',vals.flow,5);setBar('levelbar',vals.level);setBar('ntubar',vals.ntu,10);setBar('clogbar',clog);
+ syncSliders();
+ let condition=clog>THRESH?'Highly clogged':clog>=40?'Partially clogged':'Normal';
+ $('clogText').textContent='Mesh condition: '+condition;$('meshStep').textContent=condition;
+ let alert=$('mainAlert');alert.className='alert'+(clog>THRESH?' warn':'');alert.textContent=clog>THRESH?'Clogging threshold reached. Cleaning is required.':clog>=40?'Partial clogging detected. Keep monitoring the mesh.':'System operating normally. No cleaning required.';
+ if(auto&&clog>THRESH&&!cleaning)startCleaning(true);
+}
+function tick(){if(paused)return;if(!manual){vals.u1=cl('u1',vals.u1+(Math.random()-.5)*2.8);vals.u2=cl('u2',vals.u2+(Math.random()-.5)*2.4);vals.flow=cl('flow',vals.flow+(Math.random()-.5)*.5);vals.level=cl('level',vals.level+(Math.random()-.5)*4);vals.ntu=cl('ntu',vals.ntu+(Math.random()-.5)*1.5);if(!cleaning)clog=cl('clog',clog+Math.random()*.9)}trend.push(clog);trend.shift();updateUI();draw()}
+function startCleaning(automatic=false){if(cleaning)return;cleaning=true;$('motorState').textContent='MOTOR ON · CLEANING';$('motorReason').textContent=automatic?'Automatic threshold triggered':'Manual demo cleaning started';$('motorBadge').textContent='ACTIVE';$('motorBadge').className='status warn';$('cleanBtn').disabled=true;addHistory(automatic?'Automatic cleaning':'Manual demo cleaning','Wiper activated');setTimeout(()=>{clog=Math.max(8,clog-48);cleaning=false;$('motorState').textContent='MOTOR OFF';$('motorReason').textContent='Cleaning cycle completed';$('motorBadge').textContent='STANDBY';$('motorBadge').className='status';$('cleanBtn').disabled=false;$('lastClean').textContent='Last cleaning: '+new Date().toLocaleTimeString();addHistory('Cleaning completed','Estimated mesh blockage reduced');updateUI();draw()},3200)}
+$('pauseBtn').onclick=()=>{paused=!paused;$('pauseBtn').textContent=paused?'Resume updates':'Pause updates';$('connection').textContent=paused?'Simulation paused':'Simulation running'};
+$('cleanBtn').onclick=()=>startCleaning(false);
+$('autoBtn').onclick=()=>{auto=!auto;$('autoBtn').textContent='Auto mode: '+(auto?'ON':'OFF');$('autoBtn').className=auto?'secondary':'warn'};
+$('manualBtn').onclick=()=>setManual(!manual);buildManual();
+function clock(){ $('clock').textContent=new Date().toLocaleTimeString() }
+clock();setInterval(clock,1000);updateUI();draw();setInterval(tick,2000);
+</script>
+</body>
+</html>
