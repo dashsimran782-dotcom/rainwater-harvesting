@@ -515,6 +515,197 @@ Hardware motor control is not enabled.
 <td>Dashboard started</td>
 <td>Demo mode ready</td>
 </tr>
+    
+<!-- MANUAL SENSOR CONTROL PANEL -->
+<style>
+.manual-panel {
+  background: #101d30;
+  color: white;
+  padding: 22px;
+  border-radius: 15px;
+  margin: 25px 0;
+  border: 1px solid #29415d;
+}
+.manual-panel h2 { margin-top: 0; }
+.manual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+  gap: 15px;
+}
+.manual-panel label {
+  display: block;
+  margin-bottom: 6px;
+  color: #b8c9dc;
+  font-size: 13px;
+}
+.manual-panel input, .manual-panel select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px;
+  border-radius: 7px;
+  border: 1px solid #45617e;
+  background: #1b2d43;
+  color: white;
+}
+.manual-panel button {
+  margin-top: 18px;
+  padding: 12px 22px;
+  background: #16a085;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+}
+#manualStatus {
+  color: #65e6b7;
+  margin-top: 12px;
+}
+</style>
+
+<div class="manual-panel">
+  <h2>⚙️ Manual Sensor Control Panel</h2>
+  <p>MANUAL DEMO MODE – NOT LIVE SENSOR DATA</p>
+
+  <div class="manual-grid">
+    <div>
+      <label>Ultrasonic Sensor 1 (cm)</label>
+      <input type="number" id="m_ultra1" step="0.1">
+    </div>
+    <div>
+      <label>Ultrasonic Sensor 2 (cm)</label>
+      <input type="number" id="m_ultra2" step="0.1">
+    </div>
+    <div>
+      <label>Water Flow Rate (L/min)</label>
+      <input type="number" id="m_flow" step="0.1">
+    </div>
+    <div>
+      <label>Water Level (%)</label>
+      <input type="number" id="m_level" min="0" max="100">
+    </div>
+    <div>
+      <label>Turbidity (NTU)</label>
+      <input type="number" id="m_turbidity" min="0">
+    </div>
+    <div>
+      <label>Mesh Clogging (%)</label>
+      <input type="number" id="m_clogging" min="0" max="100">
+    </div>
+    <div>
+      <label>Automatic Wiper</label>
+      <select id="m_wiper">
+        <option value="OFF">OFF</option>
+        <option value="ON">ON</option>
+      </select>
+    </div>
+  </div>
+
+  <button onclick="updateManualDashboard()">
+    Update Dashboard
+  </button>
+  <button onclick="resetManualDashboard()" style="background:#52657d;margin-left:8px">
+    Reset Values
+  </button>
+
+  <p id="manualStatus">Enter values and click Update Dashboard.</p>
+</div>
+
+<script>
+const manualDefaults = {
+  ultra1: 18.4,
+  ultra2: 24.1,
+  flow: 3.8,
+  level: 64,
+  turbidity: 42,
+  clogging: 28,
+  wiper: "OFF"
+};
+
+const manualIds = {
+  ultra1: "m_ultra1",
+  ultra2: "m_ultra2",
+  flow: "m_flow",
+  level: "m_level",
+  turbidity: "m_turbidity",
+  clogging: "m_clogging",
+  wiper: "m_wiper"
+};
+
+function loadManualValues() {
+  let saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem("aquaguardManualValues") || "{}") || {};
+  } catch (e) {}
+
+  const values = {...manualDefaults, ...saved};
+
+  Object.keys(manualIds).forEach(key => {
+    document.getElementById(manualIds[key]).value = values[key];
+  });
+}
+
+function updateManualDashboard() {
+  const values = {};
+
+  for (const key of Object.keys(manualIds)) {
+    const input = document.getElementById(manualIds[key]);
+    if (key === "wiper") {
+      values[key] = input.value;
+    } else {
+      const n = Number(input.value);
+      if (input.value.trim() === "" || !Number.isFinite(n)) {
+        alert("Please enter valid values in every field.");
+        return;
+      }
+      if (n < 0 || (["level", "clogging"].includes(key) && n > 100)) {
+        alert("Please enter values within the allowed range.");
+        return;
+      }
+      values[key] = n;
+    }
+  }
+
+  localStorage.setItem("aquaguardManualValues", JSON.stringify(values));
+
+  // Update dashboard elements using optional selectors.
+  const selectors = {
+    ultra1: ["#ultra1", "#distance1", "[data-sensor='ultra1']"],
+    ultra2: ["#ultra2", "#distance2", "[data-sensor='ultra2']"],
+    flow: ["#flow", "#flowRate", "[data-sensor='flow']"],
+    level: ["#level", "#waterLevel", "[data-sensor='level']"],
+    turbidity: ["#turbidity", "[data-sensor='turbidity']"],
+    clogging: ["#clogging", "#meshClogging", "[data-sensor='clogging']"],
+    wiper: ["#wiper", "#wiperStatus", "[data-sensor='wiper']"]
+  };
+
+  for (const key in selectors) {
+    const formatted = key === "wiper" ? values[key] :
+      key === "flow" ? values[key] + " L/min" :
+      key === "level" || key === "clogging" ? values[key] + "%" :
+      key === "turbidity" ? values[key] + " NTU" :
+      values[key] + " cm";
+
+    document.querySelectorAll(selectors[key].join(",")).forEach(el => {
+      if (el.matches("input")) el.value = values[key];
+      else el.textContent = formatted;
+    });
+  }
+
+  document.getElementById("manualStatus").textContent =
+    "✓ Manual values saved successfully!";
+}
+
+function resetManualDashboard() {
+  localStorage.removeItem("aquaguardManualValues");
+  loadManualValues();
+  document.getElementById("manualStatus").textContent =
+    "Default values restored in the control panel.";
+}
+
+loadManualValues();
+</script>
+
 </tbody>
 
 </table>
